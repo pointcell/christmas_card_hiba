@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frohe Weihnachten Hiba</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        /* Basic reset to ensure full screen coverage */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #020013; /* Deep dark night sky blue */
+        }
+
+        /* The canvas where the complex animation happens */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* The actual card text container */
+        #card-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            text-align: center;
+            color: #e0d2a4; /* Elegant gold color */
+            pointer-events: none; /* Allows clicking "through" the text onto the canvas */
+            opacity: 0; /* Start hidden */
+            transition: opacity 2.5s ease-in-out; /* Slow, elegant fade in */
+            padding: 40px;
+            border: 1px solid rgba(224, 210, 164, 0.3);
+            background: rgba(2, 0, 19, 0.6); /* Semi-transparent background for readability */
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(224, 210, 164, 0.1);
+            max-width: 80%;
+        }
+
+        /* Class added via JS to trigger the fade in */
+        #card-content.reveal {
+            opacity: 1;
+        }
+
+        /* Typography styling */
+        h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 4em;
+            margin-bottom: 0.2em;
+            text-shadow: 0 0 10px rgba(224, 210, 164, 0.5);
+        }
+
+        h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5em;
+            letter-spacing: 2px;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        p {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1em;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+        }
+
+        .signature {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2em;
+            margin-top: 30px;
+        }
+
+        /* Instruction overlay - ZENTRIERT */
+        #instruction {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            
+            width: 100%;
+            text-align: center;
+            color: rgba(224, 210, 164, 0.8);
+            font-family: 'Cinzel', serif;
+            font-size: 1.2em;
+            z-index: 5;
+            pointer-events: none;
+            transition: opacity 1s;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-container"></canvas>
+
+    <div id="card-content">
+        <h1>Frohe Weihnachten</h1>
+        <h2>An Hiba</h2>
+        <p>
+            Ich wünsche dir entspannte Feiertage, 
+            viele magische Momente mit deinen Liebsten 
+            und einen gesunden, glücklichen Start ins neue Jahr.
+        </p>
+        <div class="signature">
+            Herzlichst,
+            <br>
+            Felix 
+        </div>
+    </div>
+
+    <div id="instruction">Berühre den Bildschirm...</div>
+
+    <script>
+        /**
+         * ADVANCED JAVASCRIPT PARTICLE SYSTEM
+         */
+
+        const canvas = document.getElementById('canvas-container');
+        const ctx = canvas.getContext('2d');
+        const cardContent = document.getElementById('card-content');
+        const instruction = document.getElementById('instruction');
+
+        let width, height;
+        let particlesArray = [];
+        const numberOfParticles = 150; // Background stars
+        let interactionCount = 0;
+        let cardRevealed = false;
+
+        // Handle Canvas Resizing
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Mouse interaction tracker
+        const mouse = {
+            x: undefined,
+            y: undefined,
+            radius: 150
+        }
+
+        canvas.addEventListener('mousemove', (event) => {
+            mouse.x = event.x;
+            mouse.y = event.y;
+            handleInteraction();
+        });
+
+        canvas.addEventListener('touchmove', (event) => {
+            mouse.x = event.touches[0].clientX;
+            mouse.y = event.touches[0].clientY;
+            handleInteraction();
+        });
+
+        function handleInteraction() {
+            interactionCount++;
+            // Create trail particles on movement
+            for (let i = 0; i < 3; i++) {
+                particlesArray.push(new Particle(mouse.x, mouse.y, true));
+            }
+
+            // Reveal card logic
+            if (interactionCount > 100 && !cardRevealed) {
+                cardContent.classList.add('reveal');
+                instruction.style.opacity = '0';
+                instruction.style.animation = 'none'; 
+                cardRevealed = true;
+            }
+        }
+
+        /**
+         * Particle Class
+         */
+        class Particle {
+            constructor(x, y, isTrail = false) {
+                this.x = x || Math.random() * width;
+                this.y = y || Math.random() * height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+                
+                this.isTrail = isTrail;
+                const hue = Math.random() > 0.5 ? 45 : 220; 
+                const saturation = this.isTrail ? '80%' : '60%';
+                const lightness = this.isTrail ? '60%' : '80%';
+                this.color = `hsl(${hue}, ${saturation}, ${lightness})`;
+                
+                this.life = isTrail ? 100 : Infinity;
+                this.opacity = 1;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > width || this.x < 0) this.speedX = -this.speedX;
+                if (this.y > height || this.y < 0) this.speedY = -this.speedY;
+
+                if (!this.isTrail) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouse.radius) {
+                        const forceDirectionX = dx / distance;
+                        const forceDirectionY = dy / distance;
+                        const force = (mouse.radius - distance) / mouse.radius;
+                        const directionX = forceDirectionX * force * 3;
+                        const directionY = forceDirectionY * force * 3;
+                        this.x -= directionX;
+                        this.y -= directionY;
+                    }
+                }
+
+                if (this.isTrail) {
+                    this.life -= 2;
+                    this.opacity = this.life / 100;
+                    this.size -= 0.05;
+                    if(this.size < 0) this.size = 0;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function init() {
+            particlesArray = [];
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function connect() {
+            let opacityValue = 1;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
+                        + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    
+                    if (distance < (width/7) * (height/7)) {
+                        opacityValue = 1 - (distance / 15000);
+                        ctx.strokeStyle = `rgba(224, 210, 164, ${opacityValue})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(2, 0, 19, 0.2)'; 
+            ctx.fillRect(0, 0, width, height);
+
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+
+                if (particlesArray[i].life <= 0) {
+                    particlesArray.splice(i, 1);
+                    i--;
+                }
+            }
+            connect();
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+
+        window.addEventListener('mouseout', () => {
+            mouse.x = undefined;
+            mouse.y = undefined;
+        })
+
+    </script>
+</body>
+</html>
